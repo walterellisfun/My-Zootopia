@@ -44,7 +44,7 @@ def get_attribute_string(data, key_path, label, index=None):
     :param key_path: Dot-separated path to the value.
     :param label: Label to print with the value.
     :param index: Optional list index to retrieve.
-    :return: Formatted HTML string (e.g., "Label: Value<br/>\n") or empty.
+    :return: Formatted HTML string (e.g., "<strong>Label:</strong> Value<br/>\n") or empty.
     """
     value = data
 
@@ -61,7 +61,7 @@ def get_attribute_string(data, key_path, label, index=None):
         else:
             return ""
 
-    return f"{label}: {value}<br/>\n"
+    return f"<strong>{label}:</strong> {value}<br/>\n"
 
 
 def generate_animals_info(animals):
@@ -69,10 +69,19 @@ def generate_animals_info(animals):
     output = ""
     for animal in animals:
         output += '<li class="cards__item">\n'
-        output += get_attribute_string(animal, "name", "Name")
+
+        # 1. Handle Name (Title)
+        name = get_value(animal, "name")
+        if name:
+            output += f'  <div class="card__title">{name}</div>\n'
+
+        # 2. Handle Details (Text Body)
+        output += '  <p class="card__text">\n'
         output += get_attribute_string(animal, "characteristics.diet", "Diet")
         output += get_attribute_string(animal, "locations", "Location", index=0)
         output += get_attribute_string(animal, "characteristics.type", "Type")
+        output += '  </p>\n'
+
         output += '</li>\n'
     return output
 
@@ -81,14 +90,11 @@ if __name__ == "__main__":
     animals_data = load_data('animals_data.json')
     template_content = read_file('animals_template.html')
 
-    # 1. Force the HTML to include the charset definition
+    # Force the HTML to include the charset definition
     if '<head>' in template_content:
         template_content = template_content.replace('<head>', '<head>\n<meta charset="utf-8">')
 
-    # 2. Generate animal info
     animals_info = generate_animals_info(animals_data)
-
-    # 3. Replace the placeholder
     new_html = template_content.replace("__REPLACE_ANIMALS_INFO__", animals_info)
 
     write_file('animals.html', new_html)
